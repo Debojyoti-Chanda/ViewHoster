@@ -24,8 +24,20 @@ def take_screenshot():
     screenshot.save(filepath)  # Explicit save using Pillow
     print(f"Screenshot saved: {filepath}")
 
+# Delete screenshots older than 20 minutes
+def delete_old_screenshots():
+    current_time = time.time()
+    for filename in os.listdir(screenshot_dir):
+        filepath = os.path.join(screenshot_dir, filename)
+        if os.path.isfile(filepath):
+            file_age = current_time - os.path.getmtime(filepath)
+            if file_age > 20 * 60:  # 20 minutes in seconds
+                os.remove(filepath)
+                print(f"Deleted old screenshot: {filepath}")
+
 # Schedule screenshots
-schedule.every(30).seconds.do(take_screenshot)
+schedule.every(30).seconds.do(take_screenshot)  # Take a screenshot every 30 seconds
+schedule.every(1).minutes.do(delete_old_screenshots)  # Run cleanup every 1 minutes
 
 def run_scheduler():
     while True:
