@@ -1,67 +1,26 @@
-import pyautogui
-from PIL import Image
-import schedule
-import threading
-import time
 import os
-from flask import Flask, send_from_directory
+from flask import Blueprint, send_from_directory
 
-app = Flask(__name__)
-screenshot_dir = "screenshots"
+from app.utils import screenshot_dir
 
-# Ensure the screenshot directory exists
-if not os.path.exists(screenshot_dir):
-    os.makedirs(screenshot_dir)
+routes = Blueprint("routes", __name__)
 
-# Take a screenshot every 30 seconds
-def take_screenshot():
-    timestamp = time.strftime("%Y%m%d_%H%M%S")
-    filename = f"screenshot_{timestamp}.png"
-    filepath = os.path.join(screenshot_dir, filename)
-    
-    # Capture and save the screenshot using Pillow
-    screenshot = pyautogui.screenshot()
-    screenshot.save(filepath)  # Explicit save using Pillow
-    print(f"Screenshot saved: {filepath}")
-
-# Delete screenshots older than 20 minutes
-def delete_old_screenshots():
-    current_time = time.time()
-    for filename in os.listdir(screenshot_dir):
-        filepath = os.path.join(screenshot_dir, filename)
-        if os.path.isfile(filepath):
-            file_age = current_time - os.path.getmtime(filepath)
-            if file_age > 20 * 60:  # 20 minutes in seconds
-                os.remove(filepath)
-                print(f"Deleted old screenshot: {filepath}")
-
-# Schedule screenshots
-schedule.every(30).seconds.do(take_screenshot)  # Take a screenshot every 30 seconds
-schedule.every(1).minutes.do(delete_old_screenshots)  # Run cleanup every 1 minutes
-
-def run_scheduler():
-    while True:
-        schedule.run_pending()
-        time.sleep(1)
-
-# Flask route to serve screenshots
-@app.route("/screenshots/<filename>")
+@routes.route("/screenshots/<filename>")
 def serve_screenshot(filename):
     return send_from_directory(screenshot_dir, filename)
 
-@app.route("/")
+@routes.route("/")
 def list_screenshots():
     files = os.listdir(screenshot_dir)
     files.sort(reverse=True)  # Show latest screenshots first
     file_links = [f"<li><a href='/screenshots/{file}' target='_blank'>{file}</a></li>" for file in files]
-
     return f"""
     <!DOCTYPE html>
     <html lang="en">
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Available Screenshots</title>
+        <title>ViewHoster</title>
         <style>
             body {{
                 font-family: Arial, sans-serif;
@@ -117,28 +76,14 @@ def list_screenshots():
     </head>
     <body>
         <header>
-            <h1>Available Screenshots</h1>
+            <h1>ViewHoster</h1>
         </header>
         <ul>
             {''.join(file_links)}
         </ul>
         <footer>
             <p>Access this page from your phone using the server's IP and port.</p>
-            <p>Created by Debojyoti Chanda. </p>
         </footer>
     </body>
     </html>
     """
-
-# Run Flask app
-def run_server():
-    app.run(host="0.0.0.0", port=8000)
-
-if __name__ == "__main__":
-    # Start scheduler in a separate thread
-    scheduler_thread = threading.Thread(target=run_scheduler, daemon=True)
-    scheduler_thread.start()
-
-    # Start the Flask server
-    print("Starting server...")
-    run_server()

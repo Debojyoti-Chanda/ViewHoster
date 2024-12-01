@@ -1,3 +1,4 @@
 /screenshots
 /myenv
 .DS_Store
+/app/__pycache__
