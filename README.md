@@ -17,6 +17,11 @@ Provide step-by-step instructions on how to get a development environment runnin
 
 ```bash
     git clone https://github.com/Debojyoti-Chanda/ViewHoster.git
+    # Install Tesseract OCR (MacOS)
+    brew install tesseract
+    # OR (Ubuntu/Debian)
+    sudo apt install tesseract-ocr
+    # OR (Windows) - Windows: Download from the official site and add it to your PATH.
     cd ViewHoster
 ```
 

@@ -3,6 +3,8 @@ import time
 import pyautogui
 from PIL import Image
 
+import pytesseract
+
 # # Directory to store screenshots
 # screenshot_dir = "screenshots"
 
@@ -43,3 +45,10 @@ def create_thumbnail(image_path, thumbnail_path, size=(100, 100)):
     with Image.open(image_path) as img:
         img.thumbnail(size)
         img.save(thumbnail_path, "PNG")
+
+# Function to extract text from an image
+def extract_text_from_image(image_path):
+    """Extract text from an image using Tesseract OCR."""
+    with Image.open(image_path) as img:
+        text = pytesseract.image_to_string(img)
+    return text

@@ -1,7 +1,7 @@
 import os
-from flask import Blueprint, send_from_directory
+from flask import Blueprint, send_from_directory, jsonify, request
 
-from app.utils import screenshot_dir, thumbnail_dir, create_thumbnail
+from app.utils import screenshot_dir, thumbnail_dir, create_thumbnail, extract_text_from_image
 
 routes = Blueprint("routes", __name__)
 
@@ -39,6 +39,7 @@ def list_screenshots():
                 <img src='/thumbnails/{file}' alt='{file}' style='width: 50px; height: auto; margin-right: 10px; vertical-align: middle;'>
                 {file}
             </a>
+            <button onclick="extractText('{file}')">Extract Text</button>
         </li>
         """)
 
@@ -109,6 +110,37 @@ def list_screenshots():
                 font-size: 0.9rem;
             }}
         </style>
+        <script>
+            function extractText(filename) {{
+                fetch(`/extract_text/${{filename}}`)
+                    .then(response => response.json())
+                    .then(data => {{
+                        if (data.error) {{
+                            alert("Error extracting text: " + data.error);
+                        }} else {{
+                            const textModal = document.createElement("div");
+                            textModal.style.position = "fixed";
+                            textModal.style.top = "50%";
+                            textModal.style.left = "50%";
+                            textModal.style.transform = "translate(-50%, -50%)";
+                            textModal.style.padding = "20px";
+                            textModal.style.backgroundColor = "white";
+                            textModal.style.border = "1px solid #ccc";
+                            textModal.style.boxShadow = "0 4px 8px rgba(0,0,0,0.2)";
+                            textModal.innerHTML = `
+                                <h3>Extracted Text for ${{filename}}</h3>
+                                <pre>${{data.text}}</pre>
+                                <button onclick="document.body.removeChild(this.parentNode)">Close</button>
+                            `;
+                            document.body.appendChild(textModal);
+                        }}
+                    }})
+                    .catch(error => {{
+                        console.error("Error fetching extracted text:", error);
+                        alert("Failed to extract text.");
+                    }});
+            }}
+        </script>
     </head>
     <body>
         <header>
@@ -123,3 +155,18 @@ def list_screenshots():
     </body>
     </html>
     """
+
+@routes.route("/extract_text/<filename>", methods=["GET"])
+def extract_text(filename):
+    """
+    Extract and return text from the specified image file.
+    """
+    image_path = os.path.join(screenshot_dir, filename)
+    if not os.path.exists(image_path):
+        return jsonify({"error": "File not found"}), 404
+
+    try:
+        extracted_text = extract_text_from_image(image_path)
+        return jsonify({"filename": filename, "text": extracted_text})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
