@@ -1,6 +1,7 @@
 import os
 import time
 import pyautogui
+from PIL import Image
 
 # # Directory to store screenshots
 # screenshot_dir = "screenshots"
@@ -8,6 +9,9 @@ import pyautogui
 # Directory to store screenshots
 base_dir = os.path.dirname(os.path.abspath(__file__))  # Base directory of the app
 screenshot_dir = os.path.join(base_dir, "..", "screenshots")  # Absolute path for screenshots directory
+
+thumbnail_dir = os.path.join(screenshot_dir, "thumbnails")
+os.makedirs(thumbnail_dir, exist_ok=True)
 
 # Ensure the screenshot directory exists
 if not os.path.exists(screenshot_dir):
@@ -32,3 +36,10 @@ def delete_old_screenshots():
             if file_age > 20 * 60:  # 20 minutes in seconds
                 os.remove(filepath)
                 print(f"Deleted old screenshot: {filepath}")
+
+# Utility function to create a thumbnail
+def create_thumbnail(image_path, thumbnail_path, size=(100, 100)):
+    """Generate a thumbnail for the given image."""
+    with Image.open(image_path) as img:
+        img.thumbnail(size)
+        img.save(thumbnail_path, "PNG")

@@ -1,7 +1,7 @@
 import os
 from flask import Blueprint, send_from_directory
 
-from app.utils import screenshot_dir
+from app.utils import screenshot_dir, thumbnail_dir, create_thumbnail
 
 routes = Blueprint("routes", __name__)
 
@@ -9,11 +9,40 @@ routes = Blueprint("routes", __name__)
 def serve_screenshot(filename):
     return send_from_directory(screenshot_dir, filename)
 
+@routes.route("/thumbnails/<filename>")
+def serve_thumbnail(filename):
+    """Serve thumbnail images."""
+    return send_from_directory(thumbnail_dir, filename)
+
+
 @routes.route("/")
 def list_screenshots():
-    files = os.listdir(screenshot_dir)
+    """Display the list of screenshots with thumbnails."""
+    # Filter only PNG files and ignore the thumbnail subdirectory
+    files = [f for f in os.listdir(screenshot_dir) if f.endswith(".png") and not f.startswith("thumbnails")]
     files.sort(reverse=True)  # Show latest screenshots first
-    file_links = [f"<li><a href='/screenshots/{file}' target='_blank'>{file}</a></li>" for file in files]
+
+    # Create file links with thumbnails
+    file_links = []
+    for file in files:
+        thumbnail_path = os.path.join(thumbnail_dir, file)
+        screenshot_path = os.path.join(screenshot_dir, file)
+        
+        # Generate thumbnail if it doesn't exist
+        if not os.path.exists(thumbnail_path):
+            create_thumbnail(screenshot_path, thumbnail_path)
+        
+        # HTML for each file
+        file_links.append(f"""
+        <li>
+            <a href='/screenshots/{file}' target='_blank'>
+                <img src='/thumbnails/{file}' alt='{file}' style='width: 50px; height: auto; margin-right: 10px; vertical-align: middle;'>
+                {file}
+            </a>
+        </li>
+        """)
+
+    # Render HTML
     return f"""
     <!DOCTYPE html>
     <html lang="en">
@@ -56,11 +85,18 @@ def list_screenshots():
                 padding: 10px;
                 border-radius: 8px;
                 box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+                display: flex;
+                align-items: center;
+            }}
+            li img {{
+                border-radius: 4px;
             }}
             li a {{
                 text-decoration: none;
                 color: #6200ea;
                 font-weight: bold;
+                display: flex;
+                align-items: center;
             }}
             li a:hover {{
                 color: #3700b3;
