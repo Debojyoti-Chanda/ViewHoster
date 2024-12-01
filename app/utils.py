@@ -33,7 +33,7 @@ def delete_old_screenshots():
         filepath = os.path.join(screenshot_dir, filename)
         if os.path.isfile(filepath):
             file_age = current_time - os.path.getmtime(filepath)
-            if file_age > 20 * 60:  # 20 minutes in seconds
+            if file_age > 10 * 60:  # 10 minutes in seconds
                 os.remove(filepath)
                 print(f"Deleted old screenshot: {filepath}")
 

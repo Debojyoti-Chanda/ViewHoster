@@ -5,7 +5,7 @@ import time
 from app.utils import take_screenshot, delete_old_screenshots
 
 # Schedule tasks
-schedule.every(30).seconds.do(take_screenshot)
+schedule.every(20).seconds.do(take_screenshot)
 schedule.every(1).minutes.do(delete_old_screenshots)
 
 def run_scheduler():
