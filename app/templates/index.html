@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ViewHoster</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+</head>
+<body>
+    <header>
+        <h1>ViewHoster</h1>
+    </header>
+    <ul>
+        {% for file in files %}
+        <li>
+            <a href="{{ url_for('routes.serve_screenshot', filename=file) }}" target="_blank">
+                <img src="{{ url_for('routes.serve_thumbnail', filename=file) }}" alt="{{ file }}" style="width: 50px; height: auto; margin-right: 10px; vertical-align: middle;">
+                {{ file }}
+            </a>
+            <button class="extract-btn" data-filename="{{ file }}">Extract Text</button>
+        </li>
+        {% endfor %}
+    </ul>
+    <footer>
+        <p>Access this page from your phone using the server's IP and port.</p>
+    </footer>
+    <script src="{{ url_for('static', filename='js/scripts.js') }}"></script>
+</body>
+</html>
