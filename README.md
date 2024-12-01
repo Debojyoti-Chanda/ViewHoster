@@ -26,7 +26,7 @@ Provide step-by-step instructions on how to get a development environment runnin
     python -m venv myenv
     # Activate the virtual environment (Linux/macOS)
     source myenv/bin/activate
-    # Activate the virtual environment (Wiindows)
+    # Activate the virtual environment (Windows)
     myenv\Scripts\activate
     # Install the packages listed in the requirements.txt file
     pip install -r requirements.txt
